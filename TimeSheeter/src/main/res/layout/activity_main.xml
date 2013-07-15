@@ -1,0 +1,35 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              tools:context=".MainActivity"
+              android:layout_marginBottom="@dimen/activity_vertical_margin">
+
+    <android.support.v4.view.ViewPager
+            android:layout_weight="1"
+            android:id="@+id/dayViewPager"
+            android:layout_width="match_parent"
+            android:layout_height="0dp">
+
+    </android.support.v4.view.ViewPager>
+
+
+    <TextView
+            android:gravity="center_horizontal"
+            android:textAppearance="@android:style/TextAppearance.Large"
+            android:id="@+id/current_dt"
+            android:text="--:--"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    <Button
+            android:id="@+id/checkInButton"
+            android:layout_gravity="bottom|center_horizontal"
+            android:paddingLeft="30dp"
+            android:paddingRight="30dp"
+            android:text="Check In"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+</LinearLayout>
