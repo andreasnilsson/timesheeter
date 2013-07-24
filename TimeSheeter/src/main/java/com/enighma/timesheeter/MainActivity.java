@@ -1,19 +1,16 @@
 package com.enighma.timesheeter;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.DataSetObserver;
-import android.database.MatrixCursor;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.app.Activity;
 import android.os.Handler;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.text.format.DateFormat;
 import android.text.format.Time;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
@@ -22,7 +19,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;

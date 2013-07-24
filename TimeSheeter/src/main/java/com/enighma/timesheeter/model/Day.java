@@ -2,6 +2,8 @@ package com.enighma.timesheeter.model;
 
 import android.text.format.Time;
 
+import com.enighma.timesheeter.util.TimeUtil;
+
 
 /**
  * All the data is wrapped in the {@link DayDAO}
@@ -33,6 +35,12 @@ public class Day {
         mPauses = pauses;
     }
 
+    public Day(Day day) {
+        this.mStart = day.mStart;
+        this.mEnd = day.mEnd;
+        this.mPauses = day.mPauses;
+    }
+
     public long getStart() {
         return mStart;
     }
@@ -42,11 +50,11 @@ public class Day {
     }
 
     public void checkIn() {
-        mStart = getNow();
+        mStart = TimeUtil.getNowInMs();
     }
 
     public void checkOut() {
-        mEnd = getNow();
+        mEnd = TimeUtil.getNowInMs();
     }
 
     public void setPausesDuration(long duration) {
@@ -70,12 +78,6 @@ public class Day {
      */
     public boolean isFinished() {
         return isCheckedIn() && isCheckedOut();
-    }
-
-    public static long getNow() {
-        Time t = new Time();
-        t.setToNow();
-        return t.toMillis(true);
     }
 
     public Long getPauses() {
