@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.CalendarContract;
 
-import com.enighma.timesheeter.model.CalendarDay;
 import com.enighma.timesheeter.model.Day;
 
 import org.jetbrains.annotations.NotNull;
@@ -234,7 +233,7 @@ public class CalendarOpenHelper extends SQLiteOpenHelper {
     }
 
     public CalendarDay getDay(long timestamp){
-        return null
+        return null;
     }
 
     public void updateDay(CalendarDay today) {
@@ -252,7 +251,7 @@ public class CalendarOpenHelper extends SQLiteOpenHelper {
         private int mCalendarId;
 
 
-        private CalendarDay(long rowId, int calendarId, Day day) {
+        public CalendarDay(long rowId, int calendarId, Day day) {
             super(day);
 
             mRowId = rowId;

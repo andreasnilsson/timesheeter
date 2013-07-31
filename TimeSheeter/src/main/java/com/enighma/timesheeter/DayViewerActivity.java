@@ -8,8 +8,9 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.enighma.timesheeter.model.CalendarDay;
 import com.enighma.timesheeter.model.Day;
+
+import static com.enighma.timesheeter.CalendarOpenHelper.*;
 
 /**
  * Created by Enighma on 2013-07-12.
@@ -59,7 +60,7 @@ public class DayViewerActivity extends Activity {
                 final CalendarDay day = createTestDay();
 
                 // save calendar day
-                day.saveToCalendar(getApplicationContext());
+//                day.saveToCalendar(getApplicationContext());
             }
         });
     }
@@ -76,7 +77,9 @@ public class DayViewerActivity extends Activity {
 
         long end = time.toMillis(true);
 
-        return new CalendarDay(calID, start, end, 0L);
+//        return new CalendarDay(calID, start, end, 0L);
+        // TODO
+        return null;
 
     }
 
