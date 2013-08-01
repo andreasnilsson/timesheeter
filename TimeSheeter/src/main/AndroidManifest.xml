@@ -6,7 +6,7 @@
 
     <uses-sdk
         android:minSdkVersion="17"
-        android:targetSdkVersion="17" />
+        android:targetSdkVersion="18" />
 
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
 
@@ -41,6 +41,12 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".DataViewerActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+
         <!--<receiver-->
             <!--android:icon="@drawable/ic_launcher"-->
             <!--android:label="My widget"-->
@@ -52,5 +58,7 @@
                 <!--android:name="android.appwidget.provider"-->
                 <!--android:resource="@xml/example_appwidget_info" />-->
         <!--</receiver>-->
+
+        <service android:name=".service.TimeSheetService"/>
     </application>
 </manifest>

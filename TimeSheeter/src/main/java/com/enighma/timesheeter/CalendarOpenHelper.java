@@ -11,6 +11,9 @@ import com.enighma.timesheeter.model.Day;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * For saving links between the calendar events created from this app
  */
@@ -24,7 +27,7 @@ public class CalendarOpenHelper extends SQLiteOpenHelper {
     private static final String TABLE_EVENT         = "day";
 
     // Columns
-    private static final String KEY_ROW_ID = "rowid";
+    private static final String KEY_ROW_ID          = "rowid";
     private static final String KEY_EVENT_ID        = "event_id";
     private static final String KEY_CALENDAR_ID     = "calendar_id";
     private static final String KEY_TIMESTAMP_START = "start";
@@ -238,6 +241,23 @@ public class CalendarOpenHelper extends SQLiteOpenHelper {
 
     public void updateDay(CalendarDay today) {
         // Find day and update row
+    }
+
+    public List<CalendarDay> getAllDays() {
+        final ArrayList<CalendarDay> allDays = new ArrayList<CalendarDay>();
+
+        SQLiteDatabase db = getReadableDatabase();
+        String selectQuery = "SELECT * FROM " + TABLE_EVENT;
+
+        final Cursor cursor = db.rawQuery(selectQuery, null);
+
+        while(cursor.moveToNext()) {
+            allDays.add(getCalendarDayFromCursor(cursor, false));
+        }
+
+        cursor.close();
+
+        return allDays;
     }
 
     public static class CalendarDay extends Day {
