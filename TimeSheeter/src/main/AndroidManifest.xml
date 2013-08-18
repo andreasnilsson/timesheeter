@@ -1,23 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.enighma.timesheeter"
-          android:versionCode="1"
-          android:versionName="1.0">
+    package="com.enighma.timesheeter"
+    android:versionCode="1"
+    android:versionName="1.0" >
 
     <uses-sdk
         android:minSdkVersion="17"
         android:targetSdkVersion="18" />
 
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme" >
         <activity
-            android:name=".MainActivity"
-            android:label="@string/app_name">
+            android:name="com.enighma.timesheeter.MainActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.enighma.timesheeter.HistoryBrowserActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.enighma.timesheeter.DayViewerActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.enighma.timesheeter.DataViewerActivity"
+            android:label="DataViewer act" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,44 +49,29 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".HistoryBrowserActivity"
-            android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
-        </activity>
+        <!-- <receiver -->
+        <!-- android:icon="@drawable/ic_launcher" -->
+        <!-- android:label="My widget" -->
+        <!-- android:name=".widget.CheckInOutWidgetProvider"> -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="android.appwidget.action.APPWIDGET_UPDATE" /> -->
+        <!-- </intent-filter> -->
+        <!-- <meta-data -->
+        <!-- android:name="android.appwidget.provider" -->
+        <!-- android:resource="@xml/example_appwidget_info" /> -->
+        <!-- </receiver> -->
+
+        <service android:name="com.enighma.timesheeter.service.TimeSheetService" />
 
         <activity
-            android:name=".DayViewerActivity"
-            android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
-        </activity>
-
-        <activity
-                android:label="DataViewer act"
-                android:name=".DataViewerActivity">
+            android:name="com.enighma.timesheeter.CreateEventActivity"
+            android:label="@string/title_activity_create_event" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!--<receiver-->
-            <!--android:icon="@drawable/ic_launcher"-->
-            <!--android:label="My widget"-->
-            <!--android:name=".widget.CheckInOutWidgetProvider">-->
-            <!--<intent-filter>-->
-                <!--<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />-->
-            <!--</intent-filter>-->
-            <!--<meta-data-->
-                <!--android:name="android.appwidget.provider"-->
-                <!--android:resource="@xml/example_appwidget_info" />-->
-        <!--</receiver>-->
-
-        <service android:name=".service.TimeSheetService"/>
     </application>
+
 </manifest>

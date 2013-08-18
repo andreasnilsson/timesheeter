@@ -15,5 +15,6 @@
         <item>Saturday</item>
     </array>
 
+    <string name="title_activity_create_event">Create Event</string>
 
 </resources>

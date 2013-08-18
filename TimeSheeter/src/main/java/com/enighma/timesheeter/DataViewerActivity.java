@@ -13,13 +13,13 @@ import android.view.View;
 import android.widget.Button;
 
 import com.enighma.timesheeter.service.TimeSheetService;
-import com.enighma.timesheeter.util.ViewHelper;
+import com.enighma.timesheeter.util.ActivityHelper;
 
 import static com.enighma.timesheeter.Config.LOG_TAG;
 
 // TODO description
 public class DataViewerActivity extends Activity {
-    private ViewHelper mViewHelper;
+    private ActivityHelper mActivityHelper;
 
     TimeSheetService mTimeSheetService;
 
@@ -54,19 +54,19 @@ public class DataViewerActivity extends Activity {
 
         setContentView(R.layout.activity_data_viewer);
 
-        mViewHelper = new ViewHelper(this);
+        mActivityHelper = new ActivityHelper(this);
 
         setupOnClickListeners();
 
     }
 
     private void setupOnClickListeners() {
-        Button generateButton = mViewHelper.getView(R.id.button);
+        Button generateButton = mActivityHelper.getView(R.id.button);
         generateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(mBound) {
-                    mTimeSheetService.createNewEvent(timestamp);
+//                    mTimeSheetService.createNewEvent(timestamp);
                 } else {
                     Log.d(LOG_TAG, "Service not bound");
                 }
@@ -95,7 +95,7 @@ public class DataViewerActivity extends Activity {
         // load data
         int nDays = mTimeSheetService.getNoSavedDays();
 
-        mViewHelper.setText(R.id.calendarItemsTextView, "Calendar Items: " + nDays);
+        mActivityHelper.setText(R.id.calendarItemsTextView, "Calendar Items: " + nDays);
         Log.d(LOG_TAG, "Calendar items: " + nDays);
 
     }

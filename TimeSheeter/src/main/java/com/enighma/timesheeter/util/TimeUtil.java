@@ -3,9 +3,6 @@ package com.enighma.timesheeter.util;
 
 import android.text.format.Time;
 
-/**
- * Created by Enighma on 2013-07-31.
- */
 public class TimeUtil {
 
     /**

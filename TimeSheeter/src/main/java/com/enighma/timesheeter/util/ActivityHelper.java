@@ -7,11 +7,11 @@ import android.widget.TextView;
 /**
  * Created by Enighma on 2013-08-01.
  */
-public class ViewHelper {
+public class ActivityHelper {
 
     private final Activity mActivity;
 
-    public ViewHelper(Activity activity) {
+    public ActivityHelper(Activity activity) {
         mActivity = activity;
     }
 

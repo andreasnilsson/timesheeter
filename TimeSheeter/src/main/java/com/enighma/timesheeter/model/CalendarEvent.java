@@ -7,11 +7,14 @@ import android.content.Context;
 import android.net.Uri;
 import android.provider.CalendarContract;
 
+import com.enighma.timesheeter.util.Logg;
 import com.enighma.timesheeter.util.TimeUtil;
 
 import java.util.concurrent.TimeUnit;
 
 public class CalendarEvent {
+
+    private Logg LOG = new Logg(CalendarEvent.class.getName());
 
     public static final String TIMEZONE = "Europe/Stockholm";
     private static final String GLOBAL_TITLE = "Andreas Work Timestamp";
@@ -37,11 +40,14 @@ public class CalendarEvent {
 
     // TODO should only be done after it has been stored in the db.. FORCE this behavior
     public Long sync(Context context) {
+        LOG.d("Sync with calendar");
 
         ContentResolver cr = context.getContentResolver();
         Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, generateContentValues());
         if(uri != null) mEventId = Long.parseLong(uri.getLastPathSegment());
 
+
+        LOG.d("Event Id: " + mEventId);
         return mEventId;
 
     }

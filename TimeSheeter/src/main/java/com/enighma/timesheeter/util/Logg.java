@@ -1,5 +1,7 @@
 package com.enighma.timesheeter.util;
 
+import android.util.Log;
+
 import com.enighma.timesheeter.Config;
 
 public class Logg {
@@ -8,5 +10,9 @@ public class Logg {
 
     public Logg(String logTag) {
         mLogTag = logTag;
+    }
+
+    public void d(String message) {
+        Log.d(mLogTag, message);
     }
 }

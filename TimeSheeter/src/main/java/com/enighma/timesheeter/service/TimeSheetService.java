@@ -4,12 +4,15 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.database.DataSetObserver;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.enighma.timesheeter.CalendarOpenHelper;
 import com.enighma.timesheeter.Config;
 import com.enighma.timesheeter.model.CalendarEvent;
+import com.enighma.timesheeter.util.Logg;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -22,6 +25,8 @@ public class TimeSheetService extends IntentService {
 
     public static final String EXTRA_TIMESTAMP = "extra_timestamp";
     public static final String EXTRA_CALENDAR_ID = "extra_calendar_id";
+
+    private Logg LOG = new Logg(TimeSheetService.class.getName());
 
     private final TimeSheetBinder mBinder;
     private CalendarOpenHelper mCalendarOpenHelper;
@@ -41,11 +46,21 @@ public class TimeSheetService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        LOG.d("Handle intent");
         final String action = intent.getAction();
+
+        Handler handler = new Handler(getApplicationContext().getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(), "new service intent with action: " + action, Toast.LENGTH_LONG).show();
+            }
+        });
+
 
         if(ACTION_NEW_EVENT.equals(action)){
             final long timestamp = intent.getLongExtra(EXTRA_TIMESTAMP, Long.MIN_VALUE);
-            int calendarId = intent.getIntExtra(EXTRA_TIMESTAMP, -1);
+            int calendarId = intent.getIntExtra(EXTRA_CALENDAR_ID, -1);
 
             if(timestamp != Long.MIN_VALUE) {
                 if(calendarId == -1) {
@@ -64,10 +79,6 @@ public class TimeSheetService extends IntentService {
         notifyObservers();
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        return START_STICKY;
-    }
 
     @Override
     public void onCreate() {
