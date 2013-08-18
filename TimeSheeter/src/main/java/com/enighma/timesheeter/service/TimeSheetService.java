@@ -2,43 +2,34 @@ package com.enighma.timesheeter.service;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.database.DataSetObserver;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
 import com.enighma.timesheeter.CalendarOpenHelper;
+import com.enighma.timesheeter.Config;
+import com.enighma.timesheeter.model.CalendarEvent;
 
 import org.jetbrains.annotations.Nullable;
 
-import static com.enighma.timesheeter.Config.LOG_TAG;
+import java.util.HashSet;
+import java.util.Set;
 
-/**
- * Created by Enighma on 2013-07-25.
- */
 public class TimeSheetService extends IntentService {
     // defined ations.
-    public static final String ACTION_CHECK_IN = "com.enighma.timesheeter.action.CHECK_IN";
-    public static final String ACTION_CHECK_OUT = "com.enighma.timesheeter.action.CHECK_OUT";
+    public static final String ACTION_NEW_EVENT = "com.enighma.timesheeter.action.NEW_EVENT";
 
-    public static final String EXTRA_TIMESTAMP = "timesheeter.timestamp";
-
-
+    public static final String EXTRA_TIMESTAMP = "extra_timestamp";
+    public static final String EXTRA_CALENDAR_ID = "extra_calendar_id";
 
     private final TimeSheetBinder mBinder;
     private CalendarOpenHelper mCalendarOpenHelper;
 
+    private static Set<DataSetObserver> mObservers  = new HashSet<DataSetObserver>();
+
     public TimeSheetService() {
         super("TimeSheetService");
-        mBinder = new TimeSheetBinder();
-    }
-
-    /**
-     * Creates an IntentService.  Invoked by your subclass's constructor.
-     *
-     * @param name Used to name the worker thread, important only for debugging.
-     */
-    public TimeSheetService(String name) {
-        super(name);
         mBinder = new TimeSheetBinder();
     }
 
@@ -52,20 +43,25 @@ public class TimeSheetService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         final String action = intent.getAction();
 
-        if(ACTION_CHECK_IN.equals(action)){
-            intent.getLongExtra(EXTRA_TIMESTAMP, Long.MIN_VALUE);
-            checkIn();
-        } else if(ACTION_CHECK_OUT.equals(action)){
-            checkOut();
+        if(ACTION_NEW_EVENT.equals(action)){
+            final long timestamp = intent.getLongExtra(EXTRA_TIMESTAMP, Long.MIN_VALUE);
+            int calendarId = intent.getIntExtra(EXTRA_TIMESTAMP, -1);
+
+            if(timestamp != Long.MIN_VALUE) {
+                if(calendarId == -1) {
+                    // use default calendar
+                    calendarId = 0;
+                }
+
+                createNewEvent(calendarId, timestamp);
+            }
         }
     }
 
-    public void checkOut() {
-
-    }
-
-    public void checkIn() {
-        Log.d(LOG_TAG, "Service >>> check in");
+    public void createNewEvent(int calendarId, long timestamp) {
+        final CalendarEvent calendarEvent = new CalendarEvent(calendarId, timestamp);
+        mCalendarOpenHelper.store(calendarEvent);
+        notifyObservers();
     }
 
     @Override
@@ -78,6 +74,30 @@ public class TimeSheetService extends IntentService {
         super.onCreate();
 
         mCalendarOpenHelper = new CalendarOpenHelper(getApplicationContext());
+
+        // TODO
+        // check if we have a day today
+        // else create one..
+    }
+
+    public void addTimeSheetObserver(DataSetObserver observer) {
+        mObservers.add(observer);
+    }
+
+    public void removeDataSetObserver(DataSetObserver observer){
+        mObservers.remove(observer);
+    }
+
+    // TODO better naming
+    private void notifyObservers() {
+        Log.d(Config.LOG_TAG, "Notifying observers");
+        for(DataSetObserver o : mObservers){
+            o.onChanged();
+        }
+    }
+
+    public int getNoSavedDays() {
+        return mCalendarOpenHelper.getNoDays();
     }
 
     public class TimeSheetBinder extends Binder {
@@ -85,4 +105,5 @@ public class TimeSheetService extends IntentService {
             return TimeSheetService.this;
         }
     }
+
 }

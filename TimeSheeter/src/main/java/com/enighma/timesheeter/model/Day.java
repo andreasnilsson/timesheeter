@@ -5,31 +5,25 @@ import android.text.format.Time;
 import com.enighma.timesheeter.util.TimeUtil;
 
 
-/**
- * All the data is wrapped in the {@link DayDAO}
- * Separates data in DAO and logic in here
- * <p/>
- * Created by Enighma on 2013-07-12.
- */
 public class Day {
 
     /**
      * Start timestamp for a day
      */
-    public Long mStart = 0L;
+    public Long mStart;
 
     /**
      * End timestamp for a day.
      */
-    public Long mEnd = 0L;
+    public Long mEnd;
 
     /**
      * The duration of mPauses in a day
      */
-    public Long mPauses = 0L;
+    public Long mPauses;
 
 
-    public Day(long start, long end, long pauses) {
+    public Day(Long start, Long end, Long pauses) {
         mStart = start;
         mEnd = end;
         mPauses = pauses;
@@ -41,27 +35,31 @@ public class Day {
         this.mPauses = day.mPauses;
     }
 
-    public long getStart() {
+    public Day() {
+        // Day without any initialized attribues.. that is not eched in or anything
+    }
+
+    public Long getStart() {
         return mStart;
     }
 
-    public long getEnd() {
+    public Long getEnd() {
         return mEnd;
     }
 
     public void checkIn() {
-        mStart = TimeUtil.getNowInMs();
+        mStart = TimeUtil.getNow();
     }
 
     public void checkOut() {
-        mEnd = TimeUtil.getNowInMs();
+        mEnd = TimeUtil.getNow();
     }
 
     public void setPausesDuration(long duration) {
         mPauses = duration;
     }
 
-    public long getTotalWorkingTime() {
+    public Long getTotalWorkingTime() {
         return mEnd - mStart - mPauses;
     }
 
@@ -96,5 +94,9 @@ public class Day {
         Time t = new Time();
         t.set(mStart);
         return t.weekDay;
+    }
+
+    public void setStart(Long start) {
+        mStart = start;
     }
 }

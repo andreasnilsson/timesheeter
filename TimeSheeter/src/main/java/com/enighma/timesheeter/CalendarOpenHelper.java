@@ -7,12 +7,13 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.CalendarContract;
 
+import com.enighma.timesheeter.model.CalendarEvent;
 import com.enighma.timesheeter.model.Day;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * For saving links between the calendar events created from this app
@@ -20,39 +21,37 @@ import java.util.List;
 public class CalendarOpenHelper extends SQLiteOpenHelper {
     private static final String LOG_TAG = CalendarOpenHelper.class.getName();
 
-    private static final int DATABASE_VERSION       = 1;
+    private static final int DATABASE_VERSION       = 2;
     private static final String DATABASE_NAME       = "timesheeter";
 
     // Tables
-    private static final String TABLE_EVENT         = "day";
+    private static final String TABLE_TIMESTAMP     = "timestamp";
 
     // Columns
     private static final String KEY_ROW_ID          = "rowid";
     private static final String KEY_EVENT_ID        = "event_id";
     private static final String KEY_CALENDAR_ID     = "calendar_id";
-    private static final String KEY_TIMESTAMP_START = "start";
-    private static final String KEY_TIMESTAMP_END   = "end";
-    private static final String KEY_PAUSES          = "pauses";
+    private static final String KEY_TIMESTAMP       = "timestamp";
     private static final String KEY_WEEK_NO         = "week_no";
+    private Map<Long, CalendarEvent> mDayCache  = new HashMap<Long, CalendarEvent>();
+    private Context mContext;
 
     public CalendarOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        mContext = context;
     }
-
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         // TODO testing, remove
 
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_EVENT);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_TIMESTAMP);
 
-        String CREATE_CONTACTS_TABLE = "CREATE TABLE " + TABLE_EVENT + "("
+        String CREATE_CONTACTS_TABLE = "CREATE TABLE " + TABLE_TIMESTAMP + "("
                 + KEY_ROW_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + KEY_EVENT_ID          + " INTEGER UNIQUE,"
                 + KEY_CALENDAR_ID       + " INTEGER,"
-                + KEY_TIMESTAMP_START   + " INTEGER,"
-                + KEY_TIMESTAMP_END     + " INTEGER,"
-                + KEY_PAUSES            + " INTEGER,"
+                + KEY_TIMESTAMP         + " INTEGER,"
                 + KEY_WEEK_NO           + " INTEGER"
                 + ")";
         db.execSQL(CREATE_CONTACTS_TABLE);
@@ -62,7 +61,7 @@ public class CalendarOpenHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Drop older table if existed
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_EVENT);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_TIMESTAMP);
 
         // Create tables again
         onCreate(db);
@@ -71,41 +70,46 @@ public class CalendarOpenHelper extends SQLiteOpenHelper {
     /**
      * Adds day to calendar and internal sqllite db
      * should be called from the bg.. TODO All here from the bg..
-     * @param day
-     * @param calendarId
      */
-    public CalendarDay createDay(@NotNull Day day, int calendarId){
+    public boolean store(@NotNull CalendarEvent timeStamp){
         SQLiteDatabase db = getWritableDatabase();
 
-        ContentValues values = new ContentValues();
-        values.put(KEY_CALENDAR_ID,     calendarId);
-        values.put(KEY_TIMESTAMP_START, day.getStart());
-        values.put(KEY_TIMESTAMP_END,   day.getEnd());
-        values.put(KEY_PAUSES,          day.getPauses());
-        values.put(KEY_WEEK_NO,         day.getWeekNo());
+        // first sync with calendar to get eventId
+        final Long eventId = timeStamp.sync(mContext);
 
-        // TODO
-        // Inserting Row
-        assert db != null;
-        long rowId = db.insert(TABLE_EVENT, null, values);
-        db.close(); // Closing database connection
+        if(eventId != null && db != null) {
+            ContentValues values = new ContentValues();
+            values.put(KEY_CALENDAR_ID, timeStamp.getCalendarId());
+            values.put(KEY_TIMESTAMP, timeStamp.getTimestamp());
+            values.put(KEY_WEEK_NO, timeStamp.getWeekNo());
+            values.put(KEY_EVENT_ID, eventId);
 
-        // sync day to calendar
+            // TODO
+            // Inserting Row
 
-        return new CalendarDay(rowId, calendarId, day);
-    }
+            long rowId = db.insert(TABLE_TIMESTAMP, null, values);
 
-    public void addDay(CalendarDay day){
-        createDay(day, day.getCalenderId());
+            // cache day..
+
+            mDayCache.put(rowId, timeStamp);
+
+            db.close();
+
+            return true;
+        }
+
+        return false;
     }
 
     public int getNoDays(){
         SQLiteDatabase db = getReadableDatabase();
-        String selectQuery = "SELECT * FROM " + TABLE_EVENT;
+        String selectQuery = "SELECT * FROM " + TABLE_TIMESTAMP;
 
-        final Cursor cursor = db.rawQuery(selectQuery, null);
-        return cursor.getCount();
+        if(db != null) {
+            return db.rawQuery(selectQuery, null).getCount();
+        }
 
+        return 0;
     }
 
     public void deleteDay(long timestamp){
@@ -130,80 +134,33 @@ public class CalendarOpenHelper extends SQLiteOpenHelper {
      * @param fullSync If {@code true} not only events but their metadata will be synced.
      */
     public void syncWithCalendar(boolean fullSync){
-        // generate eventId's here
         // TODO
-        // Always use the google calenders data
-
-        // for each day
-//        ContentResolver cr = context.getContentResolver();
-//
-//        Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, generateContentValues());
-//        long id = Long.parseLong(uri.getLastPathSegment());
-//
-//        CalendarOpenHelper eventHelper = new CalendarOpenHelper(context);
-//        eventHelper.createDay(this, id);
-//
-//        Log.d(LOG_TAG, "Saved to calendar");
-
-
     }
 
-    public CalendarDay getToday() {
-        final boolean doCloseCursor = true;
-        long timestamp = 0; // TODO fix today
-
-        long rowId = getRowId(timestamp);
-
-        if(rowId != -1) {
-            // we have no day
-            SQLiteDatabase db = getReadableDatabase();
-
-            String[] columns = {
-                    KEY_ROW_ID,
-                    KEY_CALENDAR_ID,
-                    KEY_TIMESTAMP_END,
-                    KEY_TIMESTAMP_START,
-                    KEY_PAUSES}; // all rows
-            String selection = KEY_ROW_ID + " == "+  rowId;
-            String[] args = null;
-            Cursor query = db.query(TABLE_EVENT, columns, selection, args, null, null, null);
-
-
-            return getCalendarDayFromCursor(query, doCloseCursor);
-        }
-
-        return null;
-    }
-
-    private @NotNull CalendarDay getCalendarDayFromCursor(@NotNull Cursor cursor,
-                                                          boolean closeCursor) {
-        long rowId = -1;
-        int calendarId= -1;
-        long start= -1;
-        long end= -1;
-        long pauses= -1;
-
-        String[] columnNames = cursor.getColumnNames();
-        for(String n : columnNames){
-            if (KEY_TIMESTAMP_END.equals(n)) {
-                end = cursor.getLong(cursor.getColumnIndexOrThrow(n));
-            }else if (KEY_TIMESTAMP_START.equals(n)) {
-                start  = cursor.getLong(cursor.getColumnIndexOrThrow(n));
-            }else if(KEY_ROW_ID.equals(n)) {
-                rowId  = cursor.getLong(cursor.getColumnIndexOrThrow(n));
-            }else if(KEY_CALENDAR_ID.equals(n)) {
-                calendarId  = cursor.getInt(cursor.getColumnIndexOrThrow(n));
-            }else if(KEY_PAUSES.equals(n)) {
-                pauses = cursor.getLong(cursor.getColumnIndexOrThrow(n));
-            }
-        }
-
-        // TODO assert they are not null
-
-        if(closeCursor) cursor.close();
-
-        return new CalendarDay(rowId, calendarId, new Day(start, end, pauses));
-    }
+//    private @NotNull CalendarDay getCalendarDayFromCursor(@NotNull Cursor cursor,
+//                                                          boolean closeCursor) {
+//        long rowId = -1;
+//        int calendarId= -1;
+//        long start= -1;
+//        long end= -1;
+//        long pauses= -1;
+//
+//        String[] columnNames = cursor.getColumnNames();
+//        for(String n : columnNames){
+//            if (KEY_TIMESTAMP.equals(n)) {
+//                start  = cursor.getLong(cursor.getColumnIndexOrThrow(n));
+//            }else if(KEY_ROW_ID.equals(n)) {
+//                rowId  = cursor.getLong(cursor.getColumnIndexOrThrow(n));
+//            }else if(KEY_CALENDAR_ID.equals(n)) {
+//                calendarId  = cursor.getInt(cursor.getColumnIndexOrThrow(n));
+//        }
+//
+//        // TODO assert they are not null
+//
+//        if(closeCursor) cursor.close();
+//
+//        return new CalendarDay(rowId, calendarId, new Day(start, end, pauses));
+//    }
 
     /**
      *
@@ -215,22 +172,23 @@ public class CalendarOpenHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getReadableDatabase();
 
-        String[] columns = {KEY_ROW_ID}; // all rows
-        String selection = KEY_TIMESTAMP_START + " <  " + timestamp +
-                " && " + KEY_TIMESTAMP_END + " >  " + timestamp;
+        if(db != null) {
+            String[] columns = {KEY_ROW_ID}; // all rows
+            String selection = KEY_TIMESTAMP + " = " + timestamp;
+            Cursor query = db.query(TABLE_TIMESTAMP, columns, selection, null, null, null, null);
 
-        String[] args = null;
-        Cursor query = db.query(TABLE_EVENT, columns, selection, args, null, null, null);
+            // return the first entry
+            query.moveToNext();
 
-        // return the first entry
-        query.moveToNext();
+            int columnIndex = query.getColumnIndexOrThrow(KEY_ROW_ID);
+            if(columnIndex != -1){
+                rowId = query.getLong(columnIndex);
+            }
 
-        int columnIndex = query.getColumnIndexOrThrow(KEY_ROW_ID);
-        if(columnIndex != -1){
-            rowId = query.getLong(columnIndex);
+            query.close();
+
         }
 
-        query.close();
 
         return rowId;
     }
@@ -243,22 +201,22 @@ public class CalendarOpenHelper extends SQLiteOpenHelper {
         // Find day and update row
     }
 
-    public List<CalendarDay> getAllDays() {
-        final ArrayList<CalendarDay> allDays = new ArrayList<CalendarDay>();
-
-        SQLiteDatabase db = getReadableDatabase();
-        String selectQuery = "SELECT * FROM " + TABLE_EVENT;
-
-        final Cursor cursor = db.rawQuery(selectQuery, null);
-
-        while(cursor.moveToNext()) {
-            allDays.add(getCalendarDayFromCursor(cursor, false));
-        }
-
-        cursor.close();
-
-        return allDays;
-    }
+//    public List<CalendarDay> getAllDays() {
+//        final ArrayList<CalendarDay> allDays = new ArrayList<CalendarDay>();
+//
+//        SQLiteDatabase db = getReadableDatabase();
+//        String selectQuery = "SELECT * FROM " + TABLE_TIMESTAMP;
+//
+//        final Cursor cursor = db.rawQuery(selectQuery, null);
+//
+//        while(cursor.moveToNext()) {
+//            allDays.add(getTimeSlot(cursor, false));
+//        }
+//
+//        cursor.close();
+//
+//        return allDays;
+//    }
 
     public static class CalendarDay extends Day {
         private static final String LOG_TAG = CalendarDay.class.getName();

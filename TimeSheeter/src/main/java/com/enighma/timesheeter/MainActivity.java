@@ -277,7 +277,7 @@ public class MainActivity extends Activity {
         Time t = new Time();
         t.setToNow();
 
-        return FILE_NAME_PREFIX + t.getWeekNumber();
+        return FILE_NAME_PREFIX + 30;//+ t.getWeekNumber();
 
     }
 
